@@ -76,4 +76,4 @@ if __name__ == "__main__":
         requests.get(f"https://api.telegram.org/bot{TOKEN}/setWebhook?url={webhook_url}")
         print("✅ Webhook configurado!")
 
-    app.run()
+    app.run(port=5000)
