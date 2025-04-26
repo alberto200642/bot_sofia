@@ -4,28 +4,41 @@ import telebot
 import requests
 import time
 from datetime import datetime, timedelta
-import os
 
 # === CONFIGURAÇÕES ===
 TOKEN = "7634899396:AAHMYtF01bJfVjAK36ASmu61daNAGThkKi8"
 API_TOKEN = "$aact_prod_000MzkwODA2MWY2OGM3MWRlMDU2NWM3MzJlNzZmNGZhZGY6Ojk3ZDAyM2ViLTY0ODgtNDAzYi04YTljLWVjZWQ3ZTk0YTEzZDo6JGFhY2hfYzVmY2I0NmEtMGI0NS00ODUyLWIxNTctNmQxYjE3MzZmYmFm"
 CANAL_CHAT_ID = -1007791482092
 PRECO = 9.90
-
-WEBHOOK_URL = os.getenv("WEBHOOK_URL")  # Agora pelo Environment do Render
+WEBHOOK_URL = "https://bot-sofia.onrender.com/" + TOKEN
 
 bot = telebot.TeleBot(TOKEN)
 app = Flask(__name__)
 cobrancas_pendentes = {}
 
+# Endpoint para o webhook
+@app.route(f'/{TOKEN}', methods=['POST'])
+def webhook():
+    json_string = request.get_data().decode('utf-8')
+    update = telebot.types.Update.de_json(json_string)
+    bot.process_new_updates([update])
+    return "!", 200
 
-# Apenas para testar se a aplicação está online
-@app.route("/", methods=['GET'])
-def index():
-    return "Bot está online!"
+# Healthcheck
+@app.route('/')
+def home():
+    return "Bot rodando via Webhook!"
 
+# Endpoint para configurar o webhook manualmente
+@app.route('/set_webhook')
+def set_webhook_route():
+    success = bot.set_webhook(url=WEBHOOK_URL)
+    if success:
+        return "Webhook configurado com sucesso!"
+    else:
+        return "Falha ao configurar webhook."
 
-# === HANDLERS ===
+# === HANDLERS e outras funções ===
 @bot.message_handler(commands=['start'])
 def start_handler(message):
     user_id = message.chat.id
@@ -34,29 +47,23 @@ def start_handler(message):
     markup.add(btn)
     bot.send_message(user_id, "👋 Seja bem-vindo ao *Prévias da Sofia*! Clique no botão abaixo para começar 🔥", parse_mode="Markdown", reply_markup=markup)
 
-
 @bot.callback_query_handler(func=lambda call: call.data == "iniciar")
 def iniciar_handler(call):
     boas_vindas(call.message)
-
 
 def boas_vindas(message):
     user_id = message.chat.id
     video = open("video_boas_vindas.mp4", "rb")
     bot.send_video(user_id, video)
-
     texto = (
         "Oi amor! 😈\n\nQue bom ter você no meu canal!! 🥰\n\nOlha o que te aguarda... 🔥\n\n"
         "Tudo aquilo que não posso mostrar em nenhum outro lugar 😏\n\n"
         "Tenha acesso aos meus vídeos mais safados 😜\n\n"
-        "Vou fazer você gozar como nunca 💦"
-    )
-
+        "Vou fazer você gozar como nunca 💦")
     markup = telebot.types.InlineKeyboardMarkup()
     btn = telebot.types.InlineKeyboardButton("💖 Quero Conteúdo Vip", callback_data="comprar")
     markup.add(btn)
     bot.send_message(user_id, texto, reply_markup=markup)
-
 
 @bot.callback_query_handler(func=lambda call: call.data == "comprar")
 def comprar_handler(call):
@@ -65,12 +72,7 @@ def comprar_handler(call):
     bot.send_message(user_id, "💳 Gerando sua cobrança PIX... Aguarde um instante 🔄")
 
     url = "https://www.asaas.com/api/v3/payments"
-    headers = {
-        "accept": "application/json",
-        "content-type": "application/json",
-        "access_token": API_TOKEN,
-    }
-
+    headers = {"accept": "application/json", "content-type": "application/json", "access_token": API_TOKEN}
     due_date = (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")
     payload = {
         "billingType": "PIX",
@@ -80,7 +82,6 @@ def comprar_handler(call):
         "description": f"Cobrança Conteúdo Premium para {nome}",
         "externalReference": str(user_id)
     }
-
     response = requests.post(url, json=payload, headers=headers)
     data = response.json()
 
@@ -90,12 +91,9 @@ def comprar_handler(call):
         return
 
     payment_id = data["id"]
-    cobrancas_pendentes[user_id] = {
-        "payment_id": payment_id,
-        "status": "PENDING"
-    }
-
+    cobrancas_pendentes[user_id] = {"payment_id": payment_id, "status": "PENDING"}
     time.sleep(2)
+
     pix_url = f"https://www.asaas.com/api/v3/payments/{payment_id}/pixQrCode"
     pix_res = requests.get(pix_url, headers=headers).json()
 
@@ -113,20 +111,14 @@ def comprar_handler(call):
     markup.add(btn1)
     bot.send_message(user_id, "Após o pagamento, clique abaixo 👇", reply_markup=markup)
 
-
 @bot.callback_query_handler(func=lambda call: call.data == "paguei")
 def pagamento_handler(call):
     user_id = call.message.chat.id
     bot.send_message(user_id, "⏳ Verificando pagamento... Aguarde até 1 minuto.")
 
-
 def criar_cliente_asaas(user_id, nome):
     url = "https://www.asaas.com/api/v3/customers"
-    headers = {
-        "accept": "application/json",
-        "content-type": "application/json",
-        "access_token": API_TOKEN,
-    }
+    headers = {"accept": "application/json", "content-type": "application/json", "access_token": API_TOKEN}
     payload = {
         "name": nome,
         "email": f"{user_id}@fake.com",
@@ -141,15 +133,7 @@ def criar_cliente_asaas(user_id, nome):
         print("❌ Erro ao criar cliente:", data)
         raise Exception("Erro ao criar cliente")
 
-
-@app.route('/' + TOKEN, methods=['POST'])
-def webhook():
-    json_string = request.get_data().decode('utf-8')
-    update = telebot.types.Update.de_json(json_string)
-    bot.process_new_updates([update])
-    return "!", 200
-
-
+# Verificação de pagamentos em paralelo
 def verificar_pagamentos():
     while True:
         for user_id, dados in list(cobrancas_pendentes.items()):
@@ -167,9 +151,7 @@ def verificar_pagamentos():
                 del cobrancas_pendentes[user_id]
         time.sleep(60)
 
-
+# Inicia servidor Flask + verificação pagamentos
 if __name__ == "__main__":
-    bot.remove_webhook()
-    bot.set_webhook(url=WEBHOOK_URL)
     Thread(target=verificar_pagamentos, daemon=True).start()
     app.run(host="0.0.0.0", port=8080)
