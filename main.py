@@ -145,16 +145,17 @@ def verificar_pagamentos():
 def webhook():
     json_string = request.get_data().decode('utf-8')
     update = telebot.types.Update.de_json(json_string)
-    print("📬 Recebeu update:", update)
+    print(f"📬 Recebeu update: {update}")
 
-    if update.message:
-        print("📝 É mensagem de texto")
-        bot.process_new_messages([update.message])
-    elif update.callback_query:
-        print("➡️ É callback query")
-        bot.process_new_callback_queries([update.callback_query])
+    try:
+        bot.process_new_updates([update])
+        print("✅ Update processado")
+    except Exception as e:
+        print(f"❌ Erro ao processar update: {e}")
 
     return "OK", 200
+
+
 
 @app.route('/')
 def home():
