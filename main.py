@@ -15,7 +15,7 @@ PRECO = 9.90
 WEBHOOK_URL = "https://bot-sofia.onrender.com/7634899396:AAHMYtF01bJfVjAK36ASmu61daNAGThkKi8"
 # 👈 substitua pelo domínio real
 
-bot = telebot.TeleBot(API_TOKEN)
+bot = telebot.TeleBot(TOKEN)
 app = Flask(__name__)
 cobrancas_pendentes = {}
 
