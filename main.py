@@ -211,7 +211,8 @@ def verificar_pagamentos():
 
 # Inicia servidor Flask + verificação pagamentos
 if __name__ == "__main__":
-    Thread(target=verificar_pagamentos, daemon=True).start()
-    bot.remove_webhook()
-    bot.set_webhook(url=WEBHOOK_URL)
     app.run(host="0.0.0.0", port=8080)
+
+bot.remove_webhook()
+bot.set_webhook(url=WEBHOOK_URL)
+Thread(target=verificar_pagamentos, daemon=True).start()
