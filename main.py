@@ -145,17 +145,11 @@ def verificar_pagamentos():
 def webhook():
     json_string = request.get_data().decode('utf-8')
     update = telebot.types.Update.de_json(json_string)
-    print(f"📬 Recebeu update: {update}")
+    print("📬 Recebeu update:", update)
 
-    try:
-        bot.process_new_updates([update])
-        print("✅ Update processado")
-    except Exception as e:
-        print(f"❌ Erro ao processar update: {e}")
+    bot.process_new_updates([update])
 
     return "OK", 200
-
-
 
 @app.route('/')
 def home():
