@@ -1,47 +1,21 @@
 from flask import Flask, request
-from threading import Thread
 import telebot
-import requests
 import time
-from datetime import datetime, timedelta
 
 # === CONFIGURAÇÕES ===
 TOKEN = "7634899396:AAFBrnm4Mg-Xne39L8kXpURKh-NYOFyRFxU"
-API_TOKEN = "$aact_prod_000MzkwODA2MWRlMDU2NWM3MzJlNzZmNGZhZGY6Ojk3ZDAyM2ViLTY0ODgtNDAzYi04YTljLWVjZWQ3ZTk0YTEzZDo6JGFhY2hfYzVmY2I0NmEtMGI0NS00ODUyLWIxNTctNmQxYjE3MzZmYmFm"
-CANAL_CHAT_ID = -1007791482092
-PRECO = 9.90
 WEBHOOK_URL = "https://bot-sofia.onrender.com/" + TOKEN
 
 bot = telebot.TeleBot(TOKEN)
 app = Flask(__name__)
-cobrancas_pendentes = {}
 
 # === HANDLERS ===
 @bot.message_handler(func=lambda message: True)
-def on_message(message):
+def handle_message(message):
     user_id = message.chat.id
-    print(f"👤 Novo usuário entrou: {user_id}")
-
-    # Verifica se a mensagem foi a primeira (sem ser o comando '/start')
-    if user_id not in cobrancas_pendentes:
-        try:
-            markup = telebot.types.InlineKeyboardMarkup()
-            btn = telebot.types.InlineKeyboardButton("🚀 Iniciar", callback_data="iniciar")
-            markup.add(btn)
-
-            bot.send_message(user_id, "👋 Seja bem-vindo ao *Prévias da Sofia*! Clique no botão abaixo para começar 🔥", parse_mode="Markdown", reply_markup=markup)
-            print("✅ Mensagem de boas-vindas enviada automaticamente")
-        except Exception as e:
-            print(f"❌ Erro ao enviar mensagem de boas-vindas: {e}")
-
-
-@bot.message_handler(commands=['start'])
-def start_handler(message):
-    print("🔔 Entrou no start_handler")
-    user_id = message.chat.id
-    print(f"👤 user_id recebido: {user_id}")
-
-    # Enviando a mensagem de boas-vindas diretamente
+    print(f"👤 Recebendo mensagem de {user_id}: {message.text}")
+    
+    # Enviar a mensagem de boas-vindas assim que o usuário enviar qualquer mensagem
     try:
         markup = telebot.types.InlineKeyboardMarkup()
         btn = telebot.types.InlineKeyboardButton("🚀 Iniciar", callback_data="iniciar")
@@ -74,94 +48,6 @@ def boas_vindas(message):
     markup.add(btn)
     bot.send_message(user_id, texto, reply_markup=markup)
 
-
-@bot.callback_query_handler(func=lambda call: call.data == "comprar")
-def comprar_handler(call):
-    user_id = call.message.chat.id
-    nome = call.from_user.first_name or "Usuário"
-    bot.send_message(user_id, "💳 Gerando sua cobrança PIX... Aguarde um instante 🔄")
-
-    url = "https://www.asaas.com/api/v3/payments"
-    headers = {"accept": "application/json", "content-type": "application/json", "access_token": API_TOKEN}
-    due_date = (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")
-    payload = {
-        "billingType": "PIX",
-        "customer": criar_cliente_asaas(user_id, nome),
-        "value": PRECO,
-        "dueDate": due_date,
-        "description": f"Cobrança Conteúdo Premium para {nome}",
-        "externalReference": str(user_id)
-    }
-    response = requests.post(url, json=payload, headers=headers)
-    data = response.json()
-
-    if "id" not in data:
-        bot.send_message(user_id, "❌ Erro ao gerar cobrança. Tente novamente mais tarde.")
-        print("Erro:", data)
-        return
-
-    payment_id = data["id"]
-    cobrancas_pendentes[user_id] = {"payment_id": payment_id, "status": "PENDING"}
-    time.sleep(2)
-
-    pix_url = f"https://www.asaas.com/api/v3/payments/{payment_id}/pixQrCode"
-    pix_res = requests.get(pix_url, headers=headers).json()
-
-    if "payload" not in pix_res:
-        bot.send_message(user_id, "❌ Erro ao gerar código PIX. Tente novamente mais tarde.")
-        return
-
-    pix_copiaecola = pix_res["payload"]
-
-    bot.send_message(user_id, f"💳 *Pagamento via PIX*\n\nEfetue o pagamento de *R$ {PRECO:.2f}* usando o código abaixo.\n\n🔁 Após o pagamento, clique em *'Já paguei'*. Liberação em até 1 minuto.", parse_mode="Markdown")
-    bot.send_message(user_id, f"📲 *Copia e Cola PIX:*\n\n`{pix_copiaecola}`", parse_mode="Markdown")
-
-    markup = telebot.types.InlineKeyboardMarkup()
-    btn1 = telebot.types.InlineKeyboardButton("✅ Já paguei", callback_data="paguei")
-    markup.add(btn1)
-    bot.send_message(user_id, "Após o pagamento, clique abaixo 👇", reply_markup=markup)
-
-
-@bot.callback_query_handler(func=lambda call: call.data == "paguei")
-def pagamento_handler(call):
-    user_id = call.message.chat.id
-    bot.send_message(user_id, "⏳ Verificando pagamento... Aguarde até 1 minuto.")
-
-
-def criar_cliente_asaas(user_id, nome):
-    url = "https://www.asaas.com/api/v3/customers"
-    headers = {"accept": "application/json", "content-type": "application/json", "access_token": API_TOKEN}
-    payload = {
-        "name": nome,
-        "email": f"{user_id}@fake.com",
-        "cpfCnpj": "14541692813",
-        "externalReference": str(user_id)
-    }
-    response = requests.post(url, json=payload, headers=headers)
-    data = response.json()
-    if "id" in data:
-        return data["id"]
-    else:
-        print("❌ Erro ao criar cliente:", data)
-        raise Exception("Erro ao criar cliente")
-
-# Verificação de pagamentos em paralelo (ACESSO VITALÍCIO)
-def verificar_pagamentos():
-    while True:
-        for user_id, dados in list(cobrancas_pendentes.items()):
-            payment_id = dados["payment_id"]
-            url = f"https://www.asaas.com/api/v3/payments/{payment_id}"
-            headers = {"accept": "application/json", "access_token": API_TOKEN}
-            res = requests.get(url, headers=headers).json()
-            if res.get("status") == "RECEIVED":
-                bot.send_message(user_id, "✅ *Pagamento confirmado!*\n\nVocê agora faz parte do meu canal VIP vitalício! 😈🔥\nAcesse agora:\n👉 https://t.me/+iN6NGTm_LMtlNTYx", parse_mode="Markdown")
-                try:
-                    bot.approve_chat_join_request(CANAL_CHAT_ID, user_id)
-                except Exception as e:
-                    print(f"❌ Falha ao aprovar entrada no canal: {e}")
-                del cobrancas_pendentes[user_id]
-        time.sleep(60)
-
 # === WEBHOOK FLASK ===
 @app.route(f'/{TOKEN}', methods=['POST'])
 def webhook():
@@ -182,7 +68,7 @@ def webhook():
 def home():
     return "Bot rodando via Webhook!"
 
-# === CONFIGURA WEBHOOK E THREAD DE PAGAMENTOS ===
+# === CONFIGURA WEBHOOK ===
 if __name__ == "__main__":
     bot.remove_webhook()
     time.sleep(1)
