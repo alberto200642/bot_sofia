@@ -17,6 +17,7 @@ bot = telebot.TeleBot(API_TOKEN)
 app = Flask(__name__)
 cobrancas_pendentes = {}
 
+
 # Endpoint para o webhook
 @app.route(f'/{API_TOKEN}', methods=['POST'])
 def getMessage():
@@ -25,11 +26,11 @@ def getMessage():
     bot.process_new_updates([update])
     return 'ok', 200
 
+
 # Apenas para testar se a aplicação está online
 @app.route("/", methods=['GET'])
 def index():
     return "Bot está online!"
-
 
 
 # === HANDLERS ===
@@ -81,7 +82,7 @@ def comprar_handler(call):
     headers = {
         "accept": "application/json",
         "content-type": "application/json",
-        "access_token": ASAAS_TOKEN,
+        "access_token": API_TOKEN,
     }
 
     due_date = (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")
@@ -149,7 +150,7 @@ def criar_cliente_asaas(user_id, nome):
     headers = {
         "accept": "application/json",
         "content-type": "application/json",
-        "access_token": ASAAS_TOKEN,
+        "access_token": API_TOKEN,
     }
     payload = {
         "name": nome,
@@ -187,10 +188,7 @@ def verificar_pagamentos():
         for user_id, dados in list(cobrancas_pendentes.items()):
             payment_id = dados["payment_id"]
             url = f"https://www.asaas.com/api/v3/payments/{payment_id}"
-            headers = {
-                "accept": "application/json",
-                "access_token": ASAAS_TOKEN
-            }
+            headers = {"accept": "application/json", "access_token": API_TOKEN}
             res = requests.get(url, headers=headers).json()
             if res.get("status") == "RECEIVED":
                 bot.send_message(
