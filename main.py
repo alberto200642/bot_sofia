@@ -23,18 +23,16 @@ def on_message(message):
     print(f"👤 Novo usuário entrou: {user_id}")
 
     # Verifica se a mensagem foi a primeira (sem ser o comando '/start')
-    if message.text == "/start":
-        return  # Ignora o /start
+    if user_id not in cobrancas_pendentes:
+        try:
+            markup = telebot.types.InlineKeyboardMarkup()
+            btn = telebot.types.InlineKeyboardButton("🚀 Iniciar", callback_data="iniciar")
+            markup.add(btn)
 
-    try:
-        markup = telebot.types.InlineKeyboardMarkup()
-        btn = telebot.types.InlineKeyboardButton("🚀 Iniciar", callback_data="iniciar")
-        markup.add(btn)
-
-        bot.send_message(user_id, "👋 Seja bem-vindo ao *Prévias da Sofia*! Clique no botão abaixo para começar 🔥", parse_mode="Markdown", reply_markup=markup)
-        print("✅ Mensagem de boas-vindas enviada automaticamente")
-    except Exception as e:
-        print(f"❌ Erro ao enviar mensagem de boas-vindas: {e}")
+            bot.send_message(user_id, "👋 Seja bem-vindo ao *Prévias da Sofia*! Clique no botão abaixo para começar 🔥", parse_mode="Markdown", reply_markup=markup)
+            print("✅ Mensagem de boas-vindas enviada automaticamente")
+        except Exception as e:
+            print(f"❌ Erro ao enviar mensagem de boas-vindas: {e}")
 
 
 @bot.message_handler(commands=['start'])
