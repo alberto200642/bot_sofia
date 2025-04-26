@@ -136,8 +136,14 @@ def webhook():
     json_string = request.get_data().decode('utf-8')
     update = telebot.types.Update.de_json(json_string)
     print("Recebido update via webhook:", update)
-    bot.process_new_updates([update])
+
+    if update.message:
+        bot.process_new_messages([update.message])
+    elif update.callback_query:
+        bot.process_new_callback_queries([update.callback_query])
+
     return "!", 200
+
 
 @app.route('/')
 def home():
