@@ -17,12 +17,15 @@ app = Flask(__name__)
 cobrancas_pendentes = {}
 
 # === HANDLERS ===
-@bot.chat_member_handler()
-def on_new_member(message):
-    user_id = message.new_chat_member.user.id
+@bot.message_handler(func=lambda message: True)
+def on_message(message):
+    user_id = message.chat.id
     print(f"👤 Novo usuário entrou: {user_id}")
 
-    # Enviar a mensagem de boas-vindas assim que o usuário entra
+    # Verifica se a mensagem foi a primeira (sem ser o comando '/start')
+    if message.text == "/start":
+        return  # Ignora o /start
+
     try:
         markup = telebot.types.InlineKeyboardMarkup()
         btn = telebot.types.InlineKeyboardButton("🚀 Iniciar", callback_data="iniciar")
@@ -32,7 +35,6 @@ def on_new_member(message):
         print("✅ Mensagem de boas-vindas enviada automaticamente")
     except Exception as e:
         print(f"❌ Erro ao enviar mensagem de boas-vindas: {e}")
-
 
 
 @bot.message_handler(commands=['start'])
@@ -58,6 +60,7 @@ def iniciar_handler(call):
     print("✅ Clicou em Iniciar")
     boas_vindas(call.message)
 
+
 def boas_vindas(message):
     user_id = message.chat.id
     print(f"🎥 Enviando vídeo de boas-vindas para {user_id}")
@@ -72,6 +75,7 @@ def boas_vindas(message):
     btn = telebot.types.InlineKeyboardButton("💖 Quero Conteúdo Vip", callback_data="comprar")
     markup.add(btn)
     bot.send_message(user_id, texto, reply_markup=markup)
+
 
 @bot.callback_query_handler(func=lambda call: call.data == "comprar")
 def comprar_handler(call):
@@ -119,10 +123,12 @@ def comprar_handler(call):
     markup.add(btn1)
     bot.send_message(user_id, "Após o pagamento, clique abaixo 👇", reply_markup=markup)
 
+
 @bot.callback_query_handler(func=lambda call: call.data == "paguei")
 def pagamento_handler(call):
     user_id = call.message.chat.id
     bot.send_message(user_id, "⏳ Verificando pagamento... Aguarde até 1 minuto.")
+
 
 def criar_cliente_asaas(user_id, nome):
     url = "https://www.asaas.com/api/v3/customers"
