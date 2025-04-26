@@ -7,15 +7,29 @@ from datetime import datetime, timedelta
 
 # === CONFIGURAÇÕES ===
 TOKEN = "7634899396:AAHMYtF01bJfVjAK36ASmu61daNAGThkKi8"
-ASAAS_TOKEN = "$aact_prod_000MzkwODA2MWY2OGM3MWRlMDU2NWM3MzJlNzZmNGZhZGY6Ojk3ZDAyM2ViLTY0ODgtNDAzYi04YTljLWVjZWQ3ZTk0YTEzZDo6JGFhY2hfYzVmY2I0NmEtMGI0NS00ODUyLWIxNTctNmQxYjE3MzZmYmFm"
+API_TOKEN = "$aact_prod_000MzkwODA2MWY2OGM3MWRlMDU2NWM3MzJlNzZmNGZhZGY6Ojk3ZDAyM2ViLTY0ODgtNDAzYi04YTljLWVjZWQ3ZTk0YTEzZDo6JGFhY2hfYzVmY2I0NmEtMGI0NS00ODUyLWIxNTctNmQxYjE3MzZmYmFm"
 CANAL_CHAT_ID = -1007791482092
 PRECO = 9.90
 WEBHOOK_URL = "https://bot-sofia.onrender.com/7634899396:AAHMYtF01bJfVjAK36ASmu61daNAGThkKi8"
 # 👈 substitua pelo domínio real
 
-bot = telebot.TeleBot(TOKEN)
+bot = telebot.TeleBot(API_TOKEN)
 app = Flask(__name__)
 cobrancas_pendentes = {}
+
+# Endpoint para o webhook
+@app.route(f'/{API_TOKEN}', methods=['POST'])
+def getMessage():
+    json_str = request.get_data().decode('UTF-8')
+    update = telebot.types.Update.de_json(json_str)
+    bot.process_new_updates([update])
+    return 'ok', 200
+
+# Apenas para testar se a aplicação está online
+@app.route("/", methods=['GET'])
+def index():
+    return "Bot está online!"
+
 
 
 # === HANDLERS ===
