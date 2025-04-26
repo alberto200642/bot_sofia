@@ -14,13 +14,15 @@ app = Flask(__name__)
 def handle_message(message):
     user_id = message.chat.id
     print(f"👤 Recebendo mensagem de {user_id}: {message.text}")
-    
+
     # Enviar a mensagem de boas-vindas assim que o usuário enviar qualquer mensagem
     try:
+        # Mensagem simples de boas-vindas com botão
         markup = telebot.types.InlineKeyboardMarkup()
         btn = telebot.types.InlineKeyboardButton("🚀 Iniciar", callback_data="iniciar")
         markup.add(btn)
 
+        # Enviar a mensagem de boas-vindas
         bot.send_message(user_id, "👋 Seja bem-vindo ao *Prévias da Sofia*! Clique no botão abaixo para começar 🔥", parse_mode="Markdown", reply_markup=markup)
         print("✅ Mensagem de boas-vindas enviada com sucesso")
     except Exception as e:
