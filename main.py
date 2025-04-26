@@ -162,7 +162,7 @@ def home():
 
 # === CONFIGURA WEBHOOK E THREAD DE PAGAMENTOS ===
 if __name__ == "__main__":
-    bot.remove_webhook()
+    
     time.sleep(1)
     bot.set_webhook(url=WEBHOOK_URL)
     print("🎯 Teste de envio de mensagem direta após set_webhook")
