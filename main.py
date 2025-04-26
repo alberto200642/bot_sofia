@@ -17,6 +17,24 @@ app = Flask(__name__)
 cobrancas_pendentes = {}
 
 # === HANDLERS ===
+@bot.chat_member_handler()
+def on_new_member(message):
+    user_id = message.new_chat_member.user.id
+    print(f"👤 Novo usuário entrou: {user_id}")
+
+    # Enviar a mensagem de boas-vindas assim que o usuário entra
+    try:
+        markup = telebot.types.InlineKeyboardMarkup()
+        btn = telebot.types.InlineKeyboardButton("🚀 Iniciar", callback_data="iniciar")
+        markup.add(btn)
+
+        bot.send_message(user_id, "👋 Seja bem-vindo ao *Prévias da Sofia*! Clique no botão abaixo para começar 🔥", parse_mode="Markdown", reply_markup=markup)
+        print("✅ Mensagem de boas-vindas enviada automaticamente")
+    except Exception as e:
+        print(f"❌ Erro ao enviar mensagem de boas-vindas: {e}")
+
+
+
 @bot.message_handler(commands=['start'])
 def start_handler(message):
     print("🔔 Entrou no start_handler")
