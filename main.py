@@ -54,6 +54,11 @@ def start_handler(message):
     markup.add(btn)
     bot.send_message(user_id, "👋 Seja bem-vindo ao *Prévias da Sofia*! Clique no botão abaixo para começar 🔥", parse_mode="Markdown", reply_markup=markup)
 
+@bot.message_handler(func=lambda message: True)
+def all_messages(message):
+    print("Mensagem recebida no handler genérico:", message.text)
+
+
 @bot.callback_query_handler(func=lambda call: call.data == "iniciar")
 def iniciar_handler(call):
     boas_vindas(call.message)
