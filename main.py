@@ -19,7 +19,7 @@ cobrancas_pendentes = {}
 # === HANDLERS ===
 @bot.message_handler(commands=['start'])
 def start_handler(message):
-    print("Chamou o start_handler")  # Debug
+    print("🔔 Entrou no start_handler")
     user_id = message.chat.id
     markup = telebot.types.InlineKeyboardMarkup()
     btn = telebot.types.InlineKeyboardButton("🚀 Iniciar", callback_data="iniciar")
@@ -28,10 +28,12 @@ def start_handler(message):
 
 @bot.callback_query_handler(func=lambda call: call.data == "iniciar")
 def iniciar_handler(call):
+    print("✅ Clicou em Iniciar")
     boas_vindas(call.message)
 
 def boas_vindas(message):
     user_id = message.chat.id
+    print(f"🎥 Enviando vídeo de boas-vindas para {user_id}")
     video = open("video_boas_vindas.mp4", "rb")
     bot.send_video(user_id, video)
     texto = (
@@ -112,7 +114,7 @@ def criar_cliente_asaas(user_id, nome):
         print("❌ Erro ao criar cliente:", data)
         raise Exception("Erro ao criar cliente")
 
-# Verificação de pagamentos em paralelo
+# Verificação de pagamentos em paralelo (ACESSO VITALÍCIO)
 def verificar_pagamentos():
     while True:
         for user_id, dados in list(cobrancas_pendentes.items()):
@@ -121,12 +123,11 @@ def verificar_pagamentos():
             headers = {"accept": "application/json", "access_token": API_TOKEN}
             res = requests.get(url, headers=headers).json()
             if res.get("status") == "RECEIVED":
-                bot.send_message(user_id, "✅ *Pagamento confirmado!*\n\nAcesse seu conteúdo VIP por 7 dias aqui:\n👉 https://t.me/+iN6NGTm_LMtlNTYx", parse_mode="Markdown")
+                bot.send_message(user_id, "✅ *Pagamento confirmado!*\n\nVocê agora faz parte do meu canal VIP vitalício! 😈🔥\nAcesse agora:\n👉 https://t.me/+iN6NGTm_LMtlNTYx", parse_mode="Markdown")
                 try:
                     bot.approve_chat_join_request(CANAL_CHAT_ID, user_id)
-                except:
-                    pass
-                bot.send_message(user_id, "⌛ Em 7 dias seu acesso expira. Para renovar, use este link: https://t.me/ConteudoVipBot?start=renovar")
+                except Exception as e:
+                    print(f"❌ Falha ao aprovar entrada no canal: {e}")
                 del cobrancas_pendentes[user_id]
         time.sleep(60)
 
@@ -135,25 +136,25 @@ def verificar_pagamentos():
 def webhook():
     json_string = request.get_data().decode('utf-8')
     update = telebot.types.Update.de_json(json_string)
-    print("Recebido update via webhook:", update)
+    print("📬 Recebeu update:", update)
 
     if update.message:
+        print("📝 É mensagem de texto")
         bot.process_new_messages([update.message])
     elif update.callback_query:
+        print("➡️ É callback query")
         bot.process_new_callback_queries([update.callback_query])
 
-    return "!", 200
-
+    return "OK", 200
 
 @app.route('/')
 def home():
     return "Bot rodando via Webhook!"
 
-# === INÍCIO SERVIDOR E VERIFICAÇÃO PAGAMENTO ===
+# === CONFIGURA WEBHOOK E THREAD DE PAGAMENTOS ===
 if __name__ == "__main__":
     bot.remove_webhook()
     time.sleep(1)
     bot.set_webhook(url=WEBHOOK_URL)
-    print("Webhook configurado para:", WEBHOOK_URL)
+    print("✅ Webhook configurado para:", WEBHOOK_URL)
     Thread(target=verificar_pagamentos, daemon=True).start()
-    app.run(host="0.0.0.0", port=8080)
