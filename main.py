@@ -23,11 +23,12 @@ def start_handler(message):
     user_id = message.chat.id
     print(f"👤 user_id recebido: {user_id}")
 
-    markup = telebot.types.InlineKeyboardMarkup()
-    btn = telebot.types.InlineKeyboardButton("🚀 Iniciar", callback_data="iniciar")
-    markup.add(btn)
-
+    # Enviando a mensagem de boas-vindas diretamente
     try:
+        markup = telebot.types.InlineKeyboardMarkup()
+        btn = telebot.types.InlineKeyboardButton("🚀 Iniciar", callback_data="iniciar")
+        markup.add(btn)
+
         bot.send_message(user_id, "👋 Seja bem-vindo ao *Prévias da Sofia*! Clique no botão abaixo para começar 🔥", parse_mode="Markdown", reply_markup=markup)
         print("✅ Mensagem de boas-vindas enviada com sucesso")
     except Exception as e:
@@ -164,12 +165,7 @@ if __name__ == "__main__":
     bot.remove_webhook()
     time.sleep(1)
     bot.set_webhook(url=WEBHOOK_URL)
-    print("🎯 Teste de envio de mensagem direta após set_webhook")
-try:
-    bot.send_message(7791482092, "🚀 Bot iniciado e webhook configurado!")
-    print("✅ Teste enviado com sucesso para 7791482092")
-except Exception as e:
-    print(f"❌ Erro ao enviar teste de mensagem: {e}")
-
     print("✅ Webhook configurado para:", WEBHOOK_URL)
-    Thread(target=verificar_pagamentos, daemon=True).start()
+
+    # Start the server to handle webhook requests
+    app.run(host="0.0.0.0", port=5000)
