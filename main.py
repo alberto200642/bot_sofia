@@ -143,13 +143,16 @@ def verificar_pagamentos():
 # === WEBHOOK FLASK ===
 @app.route(f'/{TOKEN}', methods=['POST'])
 def webhook():
-    json_string = request.get_data().decode('utf-8')
-    update = telebot.types.Update.de_json(json_string)
-    print("📬 Recebeu update:", update)
+    if request.headers.get('content-type') == 'application/json':
+        json_str = request.get_data().decode('UTF-8')
+        update = telebot.types.Update.de_json(json_str)
+        print(f"📬 Recebeu update: {update.to_dict()}")
+        bot.process_new_updates([update])
+        print("✅ Update processado")
+        return 'OK', 200
+    else:
+        return 'Unsupported Media Type', 415
 
-    bot.process_new_updates([update])
-
-    return "OK", 200
 
 @app.route('/')
 def home():
