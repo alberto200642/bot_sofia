@@ -5,6 +5,8 @@ import requests
 import time
 from datetime import datetime, timedelta
 
+import set_webhook
+
 # === CONFIGURAÇÕES ===
 TOKEN = "7634899396:AAHMYtF01bJfVjAK36ASmu61daNAGThkKi8"
 API_TOKEN = "$aact_prod_000MzkwODA2MWY2OGM3MWRlMDU2NWM3MzJlNzZmNGZhZGY6Ojk3ZDAyM2ViLTY0ODgtNDAzYi04YTljLWVjZWQ3ZTk0YTEzZDo6JGFhY2hfYzVmY2I0NmEtMGI0NS00ODUyLWIxNTctNmQxYjE3MzZmYmFm"

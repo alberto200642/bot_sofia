@@ -1,6 +1,8 @@
 import telebot
 
-bot = telebot.TeleBot('7634899396:AAHMYtF01bJfVjAK36ASmu61daNAGThkKi8'
-                      )  # Substitua pelo seu token real
-url = 'https://bot-sofia.onrender.com/7634899396:AAHMYtF01bJfVjAK36ASmu61daNAGThkKi8'
-bot.set_webhook(url=url)
+TOKEN = "7634899396:AAHMYtF01bJfVjAK36ASmu61daNAGThkKi8"
+WEBHOOK_URL = "https://bot-sofia.onrender.com/7634899396:AAHMYtF01bJfVjAK36ASmu61daNAGThkKi8"
+
+bot = telebot.TeleBot(TOKEN)
+bot.remove_webhook()
+bot.set_webhook(url=WEBHOOK_URL)
