@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 
 # === CONFIGURAÇÕES ===
 TOKEN = "7634899396:AAFBrnm4Mg-Xne39L8kXpURKh-NYOFyRFxU"
-API_TOKEN = "$aact_prod_000MzkwODA2MWY2OGM3MWRlMDU2NWM3MzJlNzZmNGZhZGY6Ojk3ZDAyM2ViLTY0ODgtNDAzYi04YTljLWVjZWQ3ZTk0YTEzZDo6JGFhY2hfYzVmY2I0NmEtMGI0NS00ODUyLWIxNTctNmQxYjE3MzZmYmFm"
+API_TOKEN = "$aact_prod_000MzkwODA2MWRlMDU2NWM3MzJlNzZmNGZhZGY6Ojk3ZDAyM2ViLTY0ODgtNDAzYi04YTljLWVjZWQ3ZTk0YTEzZDo6JGFhY2hfYzVmY2I0NmEtMGI0NS00ODUyLWIxNTctNmQxYjE3MzZmYmFm"
 CANAL_CHAT_ID = -1007791482092
 PRECO = 9.90
 WEBHOOK_URL = "https://bot-sofia.onrender.com/" + TOKEN
@@ -16,48 +16,15 @@ bot = telebot.TeleBot(TOKEN)
 app = Flask(__name__)
 cobrancas_pendentes = {}
 
-# Endpoint para o webhook
-@app.route(f'/{TOKEN}', methods=['POST'])
-def webhook():
-    json_string = request.get_data().decode('utf-8')
-    print("Recebido webhook:", json_string)  # <-- esse print pra debug
-    update = telebot.types.Update.de_json(json_string)
-    bot.process_new_updates([update])
-    return "!", 200
-
-# Healthcheck
-@app.route('/')
-def home():
-    return "Bot rodando via Webhook!"
-
-# Endpoint para configurar o webhook manualmente
-@app.route('/set_webhook')
-def set_webhook_route():
-    success = bot.set_webhook(url=WEBHOOK_URL)
-    if success:
-        return "Webhook configurado com sucesso!"
-    else:
-        return "Falha ao configurar webhook."
-
-@bot.message_handler(func=lambda message: True)
-def all_messages(message):
-    print("Mensagem recebida:", message.text)
-
-
-# === HANDLERS e outras funções ===
+# === HANDLERS ===
 @bot.message_handler(commands=['start'])
 def start_handler(message):
-    print("Comando /start recebido!")
+    print("Chamou o start_handler")  # Debug
     user_id = message.chat.id
     markup = telebot.types.InlineKeyboardMarkup()
     btn = telebot.types.InlineKeyboardButton("🚀 Iniciar", callback_data="iniciar")
     markup.add(btn)
     bot.send_message(user_id, "👋 Seja bem-vindo ao *Prévias da Sofia*! Clique no botão abaixo para começar 🔥", parse_mode="Markdown", reply_markup=markup)
-
-@bot.message_handler(func=lambda message: True)
-def all_messages(message):
-    print("Mensagem recebida no handler genérico:", message.text)
-
 
 @bot.callback_query_handler(func=lambda call: call.data == "iniciar")
 def iniciar_handler(call):
@@ -163,7 +130,24 @@ def verificar_pagamentos():
                 del cobrancas_pendentes[user_id]
         time.sleep(60)
 
-# Inicia servidor Flask + verificação pagamentos
+# === WEBHOOK FLASK ===
+@app.route(f'/{TOKEN}', methods=['POST'])
+def webhook():
+    json_string = request.get_data().decode('utf-8')
+    update = telebot.types.Update.de_json(json_string)
+    print("Recebido update via webhook:", update)
+    bot.process_new_updates([update])
+    return "!", 200
+
+@app.route('/')
+def home():
+    return "Bot rodando via Webhook!"
+
+# === INÍCIO SERVIDOR E VERIFICAÇÃO PAGAMENTO ===
 if __name__ == "__main__":
+    bot.remove_webhook()
+    time.sleep(1)
+    bot.set_webhook(url=WEBHOOK_URL)
+    print("Webhook configurado para:", WEBHOOK_URL)
     Thread(target=verificar_pagamentos, daemon=True).start()
     app.run(host="0.0.0.0", port=8080)
