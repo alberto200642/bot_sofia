@@ -164,7 +164,7 @@ def home():
 if __name__ == "__main__":
     
     time.sleep(1)
-    # === bot.set_webhook(url=WEBHOOK_URL) ===
+    bot.set_webhook(url=WEBHOOK_URL) 
     print("🎯 Teste de envio de mensagem direta após set_webhook")
     try:
         bot.send_message(7791482092, "🚀 Bot iniciado e webhook configurado!")
