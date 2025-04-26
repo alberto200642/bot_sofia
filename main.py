@@ -114,7 +114,7 @@ def criar_cliente_asaas(user_id, nome):
         print("❌ Erro ao criar cliente:", data)
         raise Exception("Erro ao criar cliente")
 
-# Verificação de pagamentos em paralelo
+# Verificação de pagamentos em paralelo (ACESSO VITALÍCIO)
 def verificar_pagamentos():
     while True:
         for user_id, dados in list(cobrancas_pendentes.items()):
@@ -123,12 +123,11 @@ def verificar_pagamentos():
             headers = {"accept": "application/json", "access_token": API_TOKEN}
             res = requests.get(url, headers=headers).json()
             if res.get("status") == "RECEIVED":
-                bot.send_message(user_id, "✅ *Pagamento confirmado!*\n\nAcesse seu conteúdo VIP por 7 dias aqui:\n👉 https://t.me/+iN6NGTm_LMtlNTYx", parse_mode="Markdown")
+                bot.send_message(user_id, "✅ *Pagamento confirmado!*\n\nVocê agora faz parte do meu canal VIP vitalício! 😈🔥\nAcesse agora:\n👉 https://t.me/+iN6NGTm_LMtlNTYx", parse_mode="Markdown")
                 try:
                     bot.approve_chat_join_request(CANAL_CHAT_ID, user_id)
-                except:
-                    pass
-                bot.send_message(user_id, "⌛ Em 7 dias seu acesso expira. Para renovar, use este link: https://t.me/ConteudoVipBot?start=renovar")
+                except Exception as e:
+                    print(f"❌ Falha ao aprovar entrada no canal: {e}")
                 del cobrancas_pendentes[user_id]
         time.sleep(60)
 
