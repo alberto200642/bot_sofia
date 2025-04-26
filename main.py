@@ -39,6 +39,11 @@ def set_webhook_route():
     else:
         return "Falha ao configurar webhook."
 
+@bot.message_handler(func=lambda message: True)
+def all_messages(message):
+    print("Mensagem recebida:", message.text)
+
+
 # === HANDLERS e outras funções ===
 @bot.message_handler(commands=['start'])
 def start_handler(message):
