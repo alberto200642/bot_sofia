@@ -41,6 +41,7 @@ def set_webhook_route():
 # === HANDLERS e outras funções ===
 @bot.message_handler(commands=['start'])
 def start_handler(message):
+    print("Comando /start recebido!")
     user_id = message.chat.id
     markup = telebot.types.InlineKeyboardMarkup()
     btn = telebot.types.InlineKeyboardButton("🚀 Iniciar", callback_data="iniciar")
