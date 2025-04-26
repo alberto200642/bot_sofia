@@ -20,6 +20,7 @@ cobrancas_pendentes = {}
 @app.route(f'/{TOKEN}', methods=['POST'])
 def webhook():
     json_string = request.get_data().decode('utf-8')
+    print("Recebido webhook:", json_string)  # <-- esse print pra debug
     update = telebot.types.Update.de_json(json_string)
     bot.process_new_updates([update])
     return "!", 200
