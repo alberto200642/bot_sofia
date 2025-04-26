@@ -4,6 +4,8 @@ import telebot
 import requests
 import time
 from datetime import datetime, timedelta
+from werkzeug.utils import url_encode
+
 
 # === CONFIGURAÇÕES ===
 TOKEN = "7634899396:AAFBrnm4Mg-Xne39L8kXpURKh-NYOFyRFxU"
