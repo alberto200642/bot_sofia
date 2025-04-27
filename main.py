@@ -146,12 +146,13 @@ def webhook():
     if request.headers.get('content-type') == 'application/json':
         json_str = request.get_data().decode('UTF-8')
         update = telebot.types.Update.de_json(json_str)
-        print(f"📬 Recebeu update: {update.to_dict()}")
+        print(f"📬 Recebeu update: {update}")
         bot.process_new_updates([update])
         print("✅ Update processado")
         return 'OK', 200
     else:
         return 'Unsupported Media Type', 415
+
 
 
 @app.route('/')
