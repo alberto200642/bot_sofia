@@ -5,7 +5,7 @@ import requests
 import time
 from datetime import datetime, timedelta
 from gunicorn.app.base import BaseApplication
-from gunicorn.six import iteritems
+for key, value in some_dict.items():
 
 # === CONFIGURAÇÕES ===
 TOKEN = "7634899396:AAFBrnm4Mg-Xne39L8kXpURKh-NYOFyRFxU"
