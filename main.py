@@ -5,9 +5,7 @@ import requests
 import time
 from datetime import datetime, timedelta
 from gunicorn.app.base import BaseApplication
-for key, value in some_dict.items():
-    print(f"Chave: {key}, Valor: {value}")
- 
+
 
 # === CONFIGURAÇÕES ===
 TOKEN = "7634899396:AAFBrnm4Mg-Xne39L8kXpURKh-NYOFyRFxU"
