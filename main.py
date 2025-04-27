@@ -4,6 +4,8 @@ import telebot
 import requests
 import time
 from datetime import datetime, timedelta
+from gunicorn.app.base import BaseApplication
+from gunicorn.six import iteritems
 
 # === CONFIGURAÇÕES ===
 TOKEN = "7634899396:AAFBrnm4Mg-Xne39L8kXpURKh-NYOFyRFxU"
@@ -32,7 +34,6 @@ def start_handler(message):
         print("✅ Mensagem de boas-vindas enviada com sucesso")
     except Exception as e:
         print(f"❌ Erro ao enviar mensagem de boas-vindas: {e}")
-
 
 
 @bot.callback_query_handler(func=lambda call: call.data == "iniciar")
@@ -153,15 +154,20 @@ def webhook():
     else:
         return 'Unsupported Media Type', 415
 
-
-
 @app.route('/')
 def home():
     return "Bot rodando via Webhook!"
 
 # === CONFIGURA WEBHOOK E THREAD DE PAGAMENTOS ===
+class GunicornApplication(BaseApplication):
+    def __init__(self, app):
+        self.application = app
+        super(GunicornApplication, self).__init__()
+
+    def load(self):
+        return self.application
+
 if __name__ == "__main__":
-    
     time.sleep(1)
     bot.set_webhook(url=WEBHOOK_URL) 
     print("🎯 Teste de envio de mensagem direta após set_webhook")
@@ -173,3 +179,4 @@ if __name__ == "__main__":
 
     print("✅ Webhook configurado para:", WEBHOOK_URL)
     Thread(target=verificar_pagamentos, daemon=True).start()
+    GunicornApplication(app).run()
